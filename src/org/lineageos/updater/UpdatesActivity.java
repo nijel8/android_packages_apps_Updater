@@ -121,7 +121,8 @@ public class UpdatesActivity extends UpdatesListActivity {
 
         TextView headerBuildVersion = (TextView) findViewById(R.id.header_build_version);
         headerBuildVersion.setText(
-                getString(R.string.header_android_version, Build.VERSION.RELEASE));
+                getString(R.string.header_android_version, Build.VERSION.RELEASE) +
+                          " - " + Constants.PROP_RELEASE_TYPE);
 
         TextView headerBuildDate = (TextView) findViewById(R.id.header_build_date);
         headerBuildDate.setText(StringGenerator.getDateLocalizedUTC(this,
@@ -189,10 +190,10 @@ public class UpdatesActivity extends UpdatesListActivity {
                 PreferenceManager.getDefaultSharedPreferences(this);
         menu.findItem(R.id.menu_auto_updates_check)
                 .setChecked(preferences.getBoolean(Constants.PREF_AUTO_UPDATES_CHECK, true));
-        menu.findItem(R.id.menu_auto_delete_updates)
+       /* menu.findItem(R.id.menu_auto_delete_updates)
                 .setChecked(preferences.getBoolean(Constants.PREF_AUTO_DELETE_UPDATES, false));
         menu.findItem(R.id.menu_mobile_data_warning)
-                .setChecked(preferences.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true));
+                .setChecked(preferences.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true));*/
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -218,7 +219,7 @@ public class UpdatesActivity extends UpdatesListActivity {
                 }
                 return true;
             }
-            case R.id.menu_auto_delete_updates: {
+           /* case R.id.menu_auto_delete_updates: {
                 boolean enable = !item.isChecked();
                 item.setChecked(enable);
                 PreferenceManager.getDefaultSharedPreferences(UpdatesActivity.this)
@@ -241,7 +242,7 @@ public class UpdatesActivity extends UpdatesListActivity {
                         Uri.parse(Utils.getChangelogURL(this)));
                 startActivity(openUrl);
                 return true;
-            }
+            }*/
         }
         return super.onOptionsItemSelected(item);
     }
@@ -331,9 +332,8 @@ public class UpdatesActivity extends UpdatesListActivity {
             } catch (IOException | JSONException e) {
                 Log.e(TAG, "Error while parsing json list", e);
             }
-        } else {
-            downloadUpdatesList(false);
         }
+        downloadUpdatesList(false);
     }
 
     private void processNewJson(File json, File jsonNew, boolean manualRefresh) {

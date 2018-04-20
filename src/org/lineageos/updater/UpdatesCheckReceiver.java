@@ -199,7 +199,7 @@ public class UpdatesCheckReceiver extends BroadcastReceiver {
 
         long buildTimestamp = 0;
         for (UpdateInfo update : updates) {
-            if (update.getTimestamp() > buildTimestamp) {
+            if (update != null && update.getTimestamp() > buildTimestamp) {
                 buildTimestamp = update.getTimestamp();
             }
         }

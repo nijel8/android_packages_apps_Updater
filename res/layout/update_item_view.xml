@@ -87,7 +87,7 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:layout_width="80dp"
+            android:layout_width="0dp"
             android:layout_height="match_parent">
 
             <ImageButton

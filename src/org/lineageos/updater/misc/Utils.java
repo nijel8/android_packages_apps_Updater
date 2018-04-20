@@ -83,23 +83,33 @@ public class Utils {
     // This should really return an UpdateBaseInfo object, but currently this only
     // used to initialize UpdateInfo objects
     private static UpdateInfo parseJsonUpdate(JSONObject object) throws JSONException {
+        String device = SystemProperties.get("ro.build.product");
+        if (!object.getString("name").contains(device)) return null;
         Update update = new Update();
-        update.setTimestamp(object.getLong("datetime"));
-        update.setName(object.getString("filename"));
-        update.setDownloadId(object.getString("id"));
-        update.setType(object.getString("romtype"));
+        update.setTimestamp(object.getLong("description"));
+        update.setName(object.getString("name"));
+        update.setDownloadId(object.getString("fid"));
+        update.setType("UNOFFICIAL by nijel8@XDA");
         update.setDownloadUrl(object.getString("url"));
-        update.setVersion(object.getString("version"));
+        update.setVersion("14.1");
         return update;
     }
 
     public static boolean isCompatible(UpdateBaseInfo update) {
-        if (update.getTimestamp() < SystemProperties.getLong(Constants.PROP_BUILD_DATE, 0)) {
-            Log.d(TAG, update.getName() + " is older than current build");
+        if (update == null) {
+            Log.d(TAG, "Update is for different device, ignoring");
             return false;
         }
-        if (!update.getType().equalsIgnoreCase(SystemProperties.get(Constants.PROP_RELEASE_TYPE))) {
-            Log.d(TAG, update.getName() + " has type " + update.getType());
+        if (update.getTimestamp() < SystemProperties.getLong(Constants.PROP_BUILD_DATE, 0)) {
+            Log.d(TAG, update.getName() + " is older than current build, ignoring");
+            return false;
+        }
+        if (update.getTimestamp() == SystemProperties.getLong(Constants.PROP_BUILD_DATE, 0)) {
+            Log.d(TAG, update.getName() + " is same as current build, ignoring");
+            return false;
+        }
+        if (!update.getType().equalsIgnoreCase(Constants.PROP_RELEASE_TYPE)) {
+            Log.d(TAG, update.getName() + " has different type " + update.getType() + ", ignoring");
             return false;
         }
         return true;
@@ -121,9 +131,17 @@ public class Utils {
                 json += line;
             }
         }
-
+        Log.d(TAG, "json=" + json);
         JSONObject obj = new JSONObject(json);
-        JSONArray updatesList = obj.getJSONArray("response");
+        JSONObject data = new JSONObject();
+        JSONArray updatesList = new JSONArray();
+        try {
+            data = obj.getJSONObject("DATA");
+            updatesList = data.getJSONArray("files");
+        } catch (JSONException je) {
+            Log.w(TAG, "No any files or folders found on server");
+            return updates;
+        }
         for (int i = 0; i < updatesList.length(); i++) {
             if (updatesList.isNull(i)) {
                 continue;
@@ -133,7 +151,7 @@ public class Utils {
                 if (!compatibleOnly || isCompatible(update)) {
                     updates.add(update);
                 } else {
-                    Log.d(TAG, "Ignoring incompatible update " + update.getName());
+                    Log.d(TAG, "Ignoring incompatible update " + (update != null ? update.getName() : "for different device"));
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Could not parse update object, index=" + i);
@@ -144,6 +162,10 @@ public class Utils {
     }
 
     public static String getServerURL(Context context) {
+/*        String serverUrl = SystemProperties.get(Constants.PROP_UPDATER_URI);
+        if (serverUrl.trim().isEmpty()) {
+            serverUrl = context.getString(R.string.conf_update_server_url_def);
+        }
         String incrementalVersion = SystemProperties.get(Constants.PROP_BUILD_VERSION_INCREMENTAL);
         String device = SystemProperties.get(Constants.PROP_NEXT_DEVICE,
                 SystemProperties.get(Constants.PROP_DEVICE));
@@ -157,6 +179,8 @@ public class Utils {
         return serverUrl.replace("{device}", device)
                 .replace("{type}", type)
                 .replace("{incr}", incrementalVersion);
+        return serverUrl + "/v1/" + device + "/" + type + "/" + incrementalVersion; */
+        return Constants.UPDATE_CHECK_URL;
     }
 
     public static String getChangelogURL(Context context) {
@@ -201,8 +225,11 @@ public class Utils {
         List<UpdateInfo> oldList = parseJson(oldJson, true);
         List<UpdateInfo> newList = parseJson(newJson, true);
         Set<String> oldIds = new HashSet<>();
+        String device = SystemProperties.get("ro.build.product");
         for (UpdateInfo update : oldList) {
-            oldIds.add(update.getDownloadId());
+            if (update.getName().contains(device)) {
+                oldIds.add(update.getDownloadId());
+            }
         }
         // In case of no new updates, the old list should
         // have all (if not more) the updates

@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import android.net.Uri;
+
 public class UpdaterController implements Controller {
 
     public static final String ACTION_DOWNLOAD_PROGRESS = "action_download_progress";
@@ -76,13 +78,13 @@ public class UpdaterController implements Controller {
     }
 
     private UpdaterController(Context context) {
+        mContext = context;
         mBroadcastManager = LocalBroadcastManager.getInstance(context);
         mUpdatesDbHelper = new UpdatesDbHelper(context);
         mDownloadRoot = Utils.getDownloadPath(context);
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Updater");
         mWakeLock.setReferenceCounted(false);
-        mContext = context.getApplicationContext();
 
         Utils.cleanupDownloadsDir(context);
 
@@ -359,11 +361,13 @@ public class UpdaterController implements Controller {
     @Override
     public boolean startDownload(String downloadId) {
         Log.d(TAG, "Starting " + downloadId);
-        if (!mDownloads.containsKey(downloadId) || isDownloading(downloadId)) {
+        if (!Utils.isNetworkAvailable(mContext) || !mDownloads.containsKey(downloadId) || isDownloading(downloadId)) {
             return false;
         }
         Update update = mDownloads.get(downloadId).mUpdate;
-        File destination = new File(mDownloadRoot, update.getName());
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(update.getDownloadUrl()));
+        mContext.startActivity(intent);
+        /*File destination = new File(mDownloadRoot, update.getName());
         if (destination.exists()) {
             destination = Utils.appendSequentialNumber(destination);
             Log.d(TAG, "Changing name with " + destination.getName());
@@ -388,7 +392,7 @@ public class UpdaterController implements Controller {
         update.setStatus(UpdateStatus.STARTING);
         notifyUpdateChange(downloadId);
         downloadClient.start();
-        mWakeLock.acquire();
+        mWakeLock.acquire();*/
         return true;
     }
 

@@ -195,7 +195,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
         String buildVersion = mActivity.getString(R.string.list_build_version,
                 update.getVersion());
         viewHolder.mBuildDate.setText(buildDate);
-        viewHolder.mBuildVersion.setText(buildVersion);
+        viewHolder.mBuildVersion.setText(buildVersion + " " + Constants.PROP_RELEASE_TYPE);
 
         if (update.getPersistentStatus() == UpdateStatus.Persistent.VERIFIED) {
             viewHolder.itemView.setOnLongClickListener(getLongClickListener(update, true));
@@ -207,7 +207,14 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
             setButtonAction(viewHolder.mAction, Action.INFO, update.getDownloadId(), !isBusy());
         } else {
             viewHolder.itemView.setOnLongClickListener(getLongClickListener(update, false));
-            setButtonAction(viewHolder.mAction, Action.DOWNLOAD, update.getDownloadId(), !isBusy());
+            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   startDownloadWithWarning(update.getDownloadId());
+                }
+            });
+            viewHolder.mAction.setVisibility(View.GONE);
+            //setButtonAction(viewHolder.mAction, Action.DOWNLOAD, update.getDownloadId(), !isBusy());
         }
     }
 
@@ -276,14 +283,14 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
     }
 
     private void startDownloadWithWarning(final String downloadId) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        boolean warn = preferences.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true);
-        if (Utils.isOnWifiOrEthernet(mActivity) || !warn) {
+        //SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+       //boolean warn = preferences.getBoolean(Constants.PREF_MOBILE_DATA_WARNING, true);
+       // if (Utils.isOnWifiOrEthernet(mActivity) || !warn) {
             mUpdaterController.startDownload(downloadId);
-            return;
-        }
+        //    return;
+       // }
 
-        View checkboxView = LayoutInflater.from(mActivity).inflate(R.layout.checkbox_view, null);
+        /*View checkboxView = LayoutInflater.from(mActivity).inflate(R.layout.checkbox_view, null);
         CheckBox checkbox = (CheckBox) checkboxView.findViewById(R.id.checkbox);
         checkbox.setText(R.string.checkbox_mobile_data_warning);
 
@@ -305,7 +312,7 @@ public class UpdatesListAdapter extends RecyclerView.Adapter<UpdatesListAdapter.
                             }
                         })
                 .setNegativeButton(android.R.string.cancel, null)
-                .show();
+                .show();*/
     }
 
     private void setButtonAction(ImageButton button, Action action, final String downloadId,

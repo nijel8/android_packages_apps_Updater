@@ -23,6 +23,7 @@ public final class Constants {
     public static final String AB_PAYLOAD_BIN_PATH = "payload.bin";
     public static final String AB_PAYLOAD_PROPERTIES_PATH = "payload_properties.txt";
 
+    public static final String UPDATE_CHECK_URL = "https://androidfilehost.com/api/?action=folder&flid=176641";
     public static final String PREF_LAST_UPDATE_CHECK = "last_update_check";
     public static final String PREF_AUTO_UPDATES_CHECK = "auto_updates_check";
     public static final String PREF_AUTO_DELETE_UPDATES = "auto_delete_updates";
@@ -36,7 +37,7 @@ public final class Constants {
     public static final String PROP_BUILD_VERSION_INCREMENTAL = "ro.build.version.incremental";
     public static final String PROP_DEVICE = "ro.cm.device";
     public static final String PROP_NEXT_DEVICE = "ro.updater.next_device";
-    public static final String PROP_RELEASE_TYPE = "ro.cm.releasetype";
+    public static final String PROP_RELEASE_TYPE = "UNOFFICIAL by nijel8@XDA";
     public static final String PROP_UPDATER_URI = "cm.updater.uri";
 
 }
